@@ -34,3 +34,13 @@ export function getLast10days(): any[] {
   }
   return result;
 }
+
+export function getDaysFromDatesArray(dates: any[]): any[] {
+  var result = [];
+  for (var i = dates.length; i > 0; i--) {
+    var d = new Date();
+    d.setDate(d.getDate() - i);
+    result.push(formatDate(d));
+  }
+  return result;
+}

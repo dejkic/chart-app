@@ -20,7 +20,8 @@ import { getLast10days } from "../../utils/helpers";
 const Charts = () => {
   const [aprData, setAprData] = useState<ResultModel>(new ResultModel());
   const [aprGrowthData, setAprGrowthData] = useState<number[]>([]);
-  const [tvlGrowthData, setTvlGrowthData] = useState<number[]>([]);
+
+  const [tvlHistoryValues, setTvlHistoryValues] = useState<number[]>([]);
 
   ChartJS.register(
     CategoryScale,
@@ -69,8 +70,8 @@ const Charts = () => {
     labels,
     datasets: [
       {
-        label: "APR (y)",
-        data: tvlGrowthData,
+        label: "TVL",
+        data: tvlHistoryValues,
         borderColor: "#9A0680",
         backgroundColor: "#9A0680",
         fill: {
@@ -95,26 +96,24 @@ const Charts = () => {
       response.data.data.filter((i: any) => i.assetId === "ETH_Lido__ETH")[0]
     );
 
+    setTvlHistoryValues(
+      response.data.data
+        .filter((i: any) => i.assetId === "ETH_Lido__ETH")[0]
+        .selected_farm.filter((i: any) => i.active === true)[0]
+        .tvlStakedHistory.map((j: any) => j.value)
+        .slice(0, 10)
+    );
+
     let startValueApr = response.data.data.filter(
       (i: any) => i.assetId === "ETH_Lido__ETH"
     )[0].aprDaily;
-
-    let startValueTvl = response.data.data.filter(
-      (i: any) => i.assetId === "ETH_Lido__ETH"
-    )[0].tvlStaked;
 
     for (let i = 0; i < 10; i++) {
       let resultApr = startValueApr + startValueApr * toDecimal("5%");
       setAprGrowthData((aprGrowthData) => [...aprGrowthData, resultApr]);
       startValueApr = resultApr;
-
-      let resultTvl = startValueTvl + startValueTvl * toDecimal("5%");
-      setTvlGrowthData((tvlGrowthData) => [...tvlGrowthData, resultTvl]);
-      startValueTvl = resultTvl;
     }
   };
-
-  console.log(aprData);
 
   useEffect(() => {
     getData();
@@ -128,7 +127,9 @@ const Charts = () => {
         {aprGrowthData.length > 0 && <Line data={dataApr} options={options} />}
 
         {aprData && <h4 style={{ marginTop: "100px" }}>{aprData.asset} TVL</h4>}
-        {tvlGrowthData.length > 0 && <Line data={dataTvl} options={options} />}
+        {tvlHistoryValues.length > 0 && (
+          <Line data={dataTvl} options={options} />
+        )}
       </div>
     </div>
   );
